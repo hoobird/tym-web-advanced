@@ -41,7 +41,7 @@ app.put('/api/books/update-recent', (req, res) => {
     // 2. Find the index of the very last item
     const lastIndex = myLibrary.length - 1;
 
-    // 3. Update the data (assuming the user sent a new 'title' in the body)
+    // 3. Update the data 
     myLibrary[lastIndex].title = req.body.title; 
 
     // 4. Send the success response
@@ -64,7 +64,6 @@ app.delete('/api/books/delete-oldest', (req, res) => {
     // 3. Send the success response
     res.json({ 
         message: "Oldest book successfully removed!", 
-        removedBook: discardedBook,
         updatedLibrary: myLibrary 
     });
 });
@@ -73,4 +72,5 @@ app.delete('/api/books/delete-oldest', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Open your browser to: http://localhost:${PORT}`);
+    console.log('Press Ctrl + C to stop the server');
 });

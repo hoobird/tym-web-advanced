@@ -9,5 +9,6 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
+  console.log('Press Ctrl + C to stop the server');
 });
 

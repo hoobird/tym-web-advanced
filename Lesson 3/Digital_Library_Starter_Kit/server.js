@@ -32,4 +32,5 @@ app.use(express.json()); // Middleware to parse JSON bodies in requests
 
 app.listen(PORT, () => {
     console.log(`Open your browser to: http://localhost:${PORT}`);
+    console.log('Press Ctrl + C to stop the server');
 });
