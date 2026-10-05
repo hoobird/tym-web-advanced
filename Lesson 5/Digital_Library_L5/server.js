@@ -53,15 +53,16 @@ app.put('/api/books/update-recent', (req, res) => {
 app.delete('/api/books/delete-oldest', (req, res) => {
     // 1. Safety check: Is the library empty?
     if (myLibrary.length === 0) {
-        return res.json({ message: "The library is already empty!" });
+        return res.json({ message: "The library is empty, nothing to delete!" });
     }
 
     // 2. Remove the very first item using the JavaScript .shift() method
-    const discardedBook = myLibrary.shift();
+    const deletedBook = myLibrary.shift();
 
     // 3. Send the success response
     res.json({
-        message: "Oldest book successfully removed!",
+        message: "Oldest book successfully deleted!",
+        deletedBook: deletedBook,
         updatedLibrary: myLibrary
     });
 });
