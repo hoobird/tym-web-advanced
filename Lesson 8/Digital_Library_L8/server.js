@@ -24,6 +24,17 @@ app.get('/api/books', async (req, res) => {
     res.json(books);
 });
 
+// READ ONE: Get a single book by its _id
+app.get('/api/books/:id', async (req, res) => {
+    const book = await Book.findById(req.params.id);
+
+    if (!book) {
+        return res.status(404).json({ message: "Book not found!" });
+    }
+
+    res.json(book);
+});
+
 // CREATE: Save a new book to the database
 app.post('/api/books', async (req, res) => {
     const newBook = await Book.create(req.body);
