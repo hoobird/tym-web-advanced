@@ -41,6 +41,32 @@ app.post('/api/books', async (req, res) => {
     res.status(201).json({ message: "Book successfully saved!", book: newBook });
 });
 
+// UPDATE: Change a book's details
+app.put('/api/books/:id', async (req, res) => {
+    const updatedBook = await Book.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true, runValidators: true }
+    );
+
+    if (!updatedBook) {
+        return res.status(404).json({ message: "Book not found!" });
+    }
+
+    res.json({ message: "Book successfully updated!", book: updatedBook });
+});
+
+// DELETE: Remove a book from the library
+app.delete('/api/books/:id', async (req, res) => {
+    const deletedBook = await Book.findByIdAndDelete(req.params.id);
+
+    if (!deletedBook) {
+        return res.status(404).json({ message: "Book not found!" });
+    }
+
+    res.json({ message: "Book successfully deleted!", book: deletedBook });
+});
+
 mongoose.connect(process.env.ATLAS_URI)
     .then(() => console.log('Successfully connected to MongoDB Atlas!'))
     .catch((error) => console.log('Database connection failed:', error));
