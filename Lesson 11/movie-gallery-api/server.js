@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Book from './models/Book.js';
+import Movie from './models/Movie.js';
 
 // Activate dotenv to read our .env file secrets
 dotenv.config();
@@ -19,70 +19,64 @@ app.use((req, res, next) => {
     next();
 });
 
-// the project array to store books
-let myLibrary = [
-    { title: "The Hobbit", author: "J.R.R. Tolkien" },
-    { title: "Atomic Habits", author: "James Clear" }
-];
-
-// READ ALL
-app.get('/api/books', async (req, res) => {
+// READ ALL movies
+app.get('/api/movies', async (req, res) => {
     try {
-        const books = await Book.find();
-        res.json(books);
+        const movies = await Movie.find();
+        res.json(movies);
     } catch (error) {
         res.status(500).json({ message: "Something went wrong on the server" });
     }
 });
 
-// READ ONE
-app.get('/api/books/:id', async (req, res) => {
+// READ ONE movie
+app.get('/api/movies/:id', async (req, res) => {
     try {
-        const book = await Book.findById(req.params.id);
-        if (!book) {
-            return res.status(404).json({ message: "Book not found!" });
+        const movie = await Movie.findById(req.params.id);
+        if (!movie) {
+            return res.status(404).json({ message: "Movie not found!" });
         }
-        res.json(book);
+        res.json(movie);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 });
 
-// CREATE: Save a new book to the database
-app.post('/api/books', async (req, res) => {
+// CREATE a movie
+app.post('/api/movies', async (req, res) => {
     try {
-        const newBook = await Book.create(req.body);
-        res.status(201).json({ message: "Book successfully saved!", book: newBook });
+        const newMovie = await Movie.create(req.body);
+        res.status(201).json({ message: "Movie successfully saved!", movie: newMovie });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 });
 
-// UPDATE
-app.put('/api/books/:id', async (req, res) => {
+// UPDATE a movie
+app.put('/api/movies/:id', async (req, res) => {
     try {
-        const updatedBook = await Book.findByIdAndUpdate(
+        const updatedMovie = await Movie.findByIdAndUpdate(
             req.params.id,
             req.body,
             { new: true, runValidators: true }
         );
-        if (!updatedBook) {
-            return res.status(404).json({ message: "Book not found!" });
+        if (!updatedMovie) {
+            return res.status(404).json({ message: "Movie not found!" });
         }
-        res.json({ message: "Book successfully updated!", book: updatedBook });
+        res.json({ message: "Movie successfully updated!", movie: updatedMovie });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 });
 
-// DELETE
-app.delete('/api/books/:id', async (req, res) => {
+// DELETE a movie
+app.delete('/api/movies/:id', async (req, res) => {
     try {
-        const deletedBook = await Book.findByIdAndDelete(req.params.id);
-        if (!deletedBook) {
-            return res.status(404).json({ message: "Book not found!" });
+        const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
+        if (!deletedMovie) {
+            return res.status(404).json({ message: "Movie not found!" });
         }
-        res.json({ message: "Book successfully deleted!", book: deletedBook });
+        res.json({ message: "Movie successfully deleted!", movie: deletedMovie });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
