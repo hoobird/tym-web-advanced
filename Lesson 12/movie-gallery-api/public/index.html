@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Admin Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 4px; }
+        .subtitle { text-align: center; color: #666; margin-top: 0; font-size: 14px; }
+        h3 { margin-top: 0; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #0056b3; }
+        .btn-small { padding: 6px 10px; font-size: 13px; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .form-group { margin: 15px 0; padding: 15px; background: #eee; border-radius: 5px; }
+        label { display: block; font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 4px; }
+        input, textarea { padding: 8px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 14px; }
+        textarea { resize: vertical; min-height: 70px; }
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
+        .form-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .hint { font-size: 12px; color: #666; margin: 6px 0 0; }
+        .dashboard-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 20px; align-items: start; margin-top: 10px; }
+        .status { padding: 10px 12px; border-radius: 5px; margin-top: 10px; font-size: 14px; background: #e9f2ff; color: #1d4f91; min-height: 18px; }
+        .status.success { background: #e6f6ea; color: #1e6b34; }
+        .status.error { background: #fdecea; color: #b42318; font-weight: 600; }
+        .movie-list { display: flex; flex-direction: column; gap: 10px; }
+        .movie-item { display: flex; gap: 12px; align-items: center; background: #f8f9fc; border: 1px solid #e4e7ec; border-radius: 6px; padding: 10px; }
+        .movie-item.editing { border-color: #ffc107; background: #fffbea; }
+        .movie-item img { width: 60px; height: 85px; object-fit: cover; border-radius: 4px; background: #ddd; flex-shrink: 0; }
+        .movie-info { flex: 1; min-width: 0; }
+        .movie-title { font-weight: bold; color: #222; }
+        .movie-meta { font-size: 13px; color: #555; margin-top: 3px; }
+        .movie-id { font-size: 11px; color: #999; font-family: monospace; margin-top: 3px; word-break: break-all; }
+        .movie-actions { display: flex; flex-direction: column; gap: 6px; }
+        .empty { color: #666; font-style: italic; padding: 20px; text-align: center; }
+        .list-header { display: flex; justify-content: space-between; align-items: center; }
+        @media (max-width: 900px) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎬 Movie Admin Panel</h1>
+    <p class="subtitle">Add, edit and delete movies in the Movie Gallery, no code needed!</p>
+
+    <div class="form-group">
+        <label for="adminKey">🔑 Admin Key (needed from Lesson 13)</label>
+        <input type="password" id="adminKey" placeholder="Leave empty until your server checks for an admin key">
+    </div>
+
+    <div id="status" class="status">Loading movies...</div>
+
+    <div class="dashboard-layout">
+        <!-- LEFT: Add / Edit form -->
+        <div class="form-group">
+            <h3 id="formTitle">➕ Add a New Movie</h3>
+            <form id="movieForm">
+                <input type="hidden" id="movieId">
+
+                <label for="title">Title</label>
+                <input type="text" id="title" placeholder="The Lion King">
+
+                <div class="row">
+                    <div>
+                        <label for="year">Year</label>
+                        <input type="number" id="year" placeholder="1994">
+                    </div>
+                    <div>
+                        <label for="score">Score (0 to 5)</label>
+                        <input type="number" id="score" placeholder="4" step="0.5">
+                    </div>
+                </div>
+
+                <label for="imdbId">IMDB ID</label>
+                <input type="text" id="imdbId" placeholder="tt0110357">
+                <p class="hint">Found in the IMDB page address: imdb.com/title/<b>tt0110357</b>/</p>
+
+                <label for="description">Description</label>
+                <textarea id="description" placeholder="Lion prince Simba and his father are targeted by..."></textarea>
+
+                <label for="imagelink">Poster Image Link</label>
+                <input type="text" id="imagelink" placeholder="https://...jpg">
+
+                <label for="trailerUrl">Trailer Link</label>
+                <input type="text" id="trailerUrl" placeholder="https://youtu.be/...">
+
+                <div class="form-buttons">
+                    <button type="submit" id="submitButton">Add Movie</button>
+                    <button type="button" id="cancelButton" class="btn-secondary" style="display: none;">Cancel Edit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- RIGHT: Movie list -->
+        <div class="form-group">
+            <div class="list-header">
+                <h3>🍿 All Movies</h3>
+                <button type="button" class="btn-small" id="refreshButton">🔄 Refresh</button>
+            </div>
+            <div id="movieList" class="movie-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/movies';
+    const FIELDS = ['title', 'year', 'score', 'imdbId', 'description', 'imagelink', 'trailerUrl'];
+
+    const statusBox = document.getElementById('status');
+    const movieList = document.getElementById('movieList');
+    const movieForm = document.getElementById('movieForm');
+    const formTitle = document.getElementById('formTitle');
+    const submitButton = document.getElementById('submitButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const movieIdInput = document.getElementById('movieId');
+
+    let movies = [];
+
+    // ---------- Helpers ----------
+
+    function showStatus(message, type = '') {
+        statusBox.textContent = message;
+        statusBox.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    function buildHeaders(withBody) {
+        const headers = {};
+        if (withBody) headers['Content-Type'] = 'application/json';
+        const key = document.getElementById('adminKey').value.trim();
+        if (key) headers['x-admin-key'] = key;
+        return headers;
+    }
+
+    // Sends a request to the Movie API and returns the JSON reply.
+    // Throws an Error with a friendly message if something goes wrong.
+    async function callApi(url, options = {}) {
+        let response;
+        try {
+            response = await fetch(url, options);
+        } catch {
+            throw new Error('Could not reach the server. Is it running? (npm run dev)');
+        }
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch {
+            // The server did not reply with JSON (e.g. an HTML error page)
+        }
+
+        if (!response.ok) {
+            const serverMessage = data && data.message ? ' - ' + data.message : '';
+            if (response.status === 404 && !data) {
+                throw new Error(`404 Not Found - Does your server have this route? (${options.method || 'GET'} ${url})`);
+            }
+            throw new Error(`${response.status} ${response.statusText}${serverMessage}`);
+        }
+
+        return data;
+    }
+
+    // ---------- READ: load and show all movies ----------
+
+    async function loadMovies() {
+        try {
+            const data = await callApi(API_URL);
+            movies = Array.isArray(data) ? data : [];
+            renderMovies();
+            showStatus(`Loaded ${movies.length} movie(s).`, 'success');
+        } catch (error) {
+            movieList.innerHTML = '';
+            showStatus('❌ Could not load movies: ' + error.message, 'error');
+        }
+    }
+
+    function renderMovies() {
+        movieList.innerHTML = '';
+
+        if (movies.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'empty';
+            empty.textContent = 'No movies yet. Add one using the form!';
+            movieList.appendChild(empty);
+            return;
+        }
+
+        movies.forEach(movie => {
+            const item = document.createElement('div');
+            item.className = 'movie-item' + (movie._id === movieIdInput.value ? ' editing' : '');
+
+            const img = document.createElement('img');
+            img.src = movie.imagelink || '';
+            img.alt = movie.title || 'Poster';
+
+            const info = document.createElement('div');
+            info.className = 'movie-info';
+
+            const title = document.createElement('div');
+            title.className = 'movie-title';
+            title.textContent = movie.title ?? '(no title)';
+
+            const meta = document.createElement('div');
+            meta.className = 'movie-meta';
+            meta.textContent = `${movie.year ?? '?'} · ⭐ ${movie.score ?? '?'} / 5 · ${movie.imdbId ?? 'no IMDB ID'}`;
+
+            const id = document.createElement('div');
+            id.className = 'movie-id';
+            id.textContent = '_id: ' + movie._id;
+
+            info.append(title, meta, id);
+
+            const actions = document.createElement('div');
+            actions.className = 'movie-actions';
+
+            const editButton = document.createElement('button');
+            editButton.type = 'button';
+            editButton.className = 'btn-small btn-warning';
+            editButton.textContent = '✏️ Edit';
+            editButton.addEventListener('click', () => startEdit(movie));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'btn-small btn-danger';
+            deleteButton.textContent = '🗑️ Delete';
+            deleteButton.addEventListener('click', () => deleteMovie(movie));
+
+            actions.append(editButton, deleteButton);
+            item.append(img, info, actions);
+            movieList.appendChild(item);
+        });
+    }
+
+    // ---------- Form: Add or Edit ----------
+
+    function getFormData() {
+        const movie = {};
+        FIELDS.forEach(field => {
+            const value = document.getElementById(field).value.trim();
+            if (value === '') return; // leave empty fields out, so the Schema can say what's missing
+            movie[field] = (field === 'year' || field === 'score') ? Number(value) : value;
+        });
+        return movie;
+    }
+
+    function startEdit(movie) {
+        movieIdInput.value = movie._id;
+        FIELDS.forEach(field => {
+            document.getElementById(field).value = movie[field] ?? '';
+        });
+        formTitle.textContent = '✏️ Edit Movie';
+        submitButton.textContent = 'Save Changes';
+        submitButton.className = 'btn-warning';
+        cancelButton.style.display = 'inline-block';
+        renderMovies();
+        showStatus(`Editing "${movie.title}". Change the fields and click Save Changes.`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        movieForm.reset();
+        movieIdInput.value = '';
+        formTitle.textContent = '➕ Add a New Movie';
+        submitButton.textContent = 'Add Movie';
+        submitButton.className = '';
+        cancelButton.style.display = 'none';
+        renderMovies();
+    }
+
+    movieForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const movie = getFormData();
+        const id = movieIdInput.value;
+
+        submitButton.disabled = true;
+        try {
+            let data;
+            if (id) {
+                // UPDATE: PUT /api/movies/:id
+                data = await callApi(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: buildHeaders(true),
+                    body: JSON.stringify(movie)
+                });
+            } else {
+                // CREATE: POST /api/movies
+                data = await callApi(API_URL, {
+                    method: 'POST',
+                    headers: buildHeaders(true),
+                    body: JSON.stringify(movie)
+                });
+            }
+            const message = (data && data.message) || (id ? 'Movie updated!' : 'Movie added!');
+            resetForm();
+            await loadMovies();
+            showStatus('✅ ' + message, 'success');
+        } catch (error) {
+            showStatus('❌ ' + error.message, 'error');
+        } finally {
+            submitButton.disabled = false;
+        }
+    });
+
+    cancelButton.addEventListener('click', () => {
+        resetForm();
+        showStatus('Edit cancelled.');
+    });
+
+    // ---------- DELETE ----------
+
+    async function deleteMovie(movie) {
+        if (!confirm(`Delete "${movie.title}"? This cannot be undone!`)) return;
+
+        try {
+            // DELETE /api/movies/:id
+            const data = await callApi(`${API_URL}/${movie._id}`, {
+                method: 'DELETE',
+                headers: buildHeaders(false)
+            });
+            if (movieIdInput.value === movie._id) resetForm();
+            await loadMovies();
+            showStatus('✅ ' + ((data && data.message) || 'Movie deleted!'), 'success');
+        } catch (error) {
+            showStatus('❌ ' + error.message, 'error');
+        }
+    }
+
+    // ---------- Start ----------
+
+    document.getElementById('refreshButton').addEventListener('click', loadMovies);
+    loadMovies();
+</script>
+</body>
+</html>
