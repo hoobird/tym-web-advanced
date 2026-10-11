@@ -15,6 +15,7 @@
     "react-player": "^3.4.0",
     "react-scripts": "5.0.1"
   },
+  "homepage": "https://USERNAME.github.io/movie-gallery-frontend",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
