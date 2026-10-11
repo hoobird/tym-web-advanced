@@ -16,7 +16,7 @@
         .btn-warning:hover { background: #e0a800; }
         .form-group { margin: 15px 0; padding: 15px; background: #eee; border-radius: 5px; }
         input { padding: 8px; margin-right: 10px; width: 40%; }
-        pre { background: #222; color: #0f0; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 14px; min-height: 220px;}
+        pre { background: #222; color: #0f0; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 14px; min-height: 120px;}
         .dashboard-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); gap: 20px; align-items: start; margin-top: 10px; }
         .response-panel { padding: 15px; background: #f8f9fc; border: 1px solid #e4e7ec; border-radius: 8px; position: sticky; top: 20px; }
         .status-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; min-height: 32px; }
@@ -84,11 +84,15 @@
 
             <h3>Server Response:</h3>
             <pre id="displayArea">Waiting for server response...</pre>
+
+            <h3>📚 Current Library:</h3>
+            <pre id="libraryArea">Click "Test GET" to load the library...</pre>
         </div>
     </div>
 </div>
 
 <script>
+    const libraryArea = document.getElementById('libraryArea');
     const displayArea = document.getElementById('displayArea');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const statusMessage = document.getElementById('statusMessage');
@@ -106,22 +110,28 @@
         displayArea.innerText = message;
     }
 
-    async function requestApi(url, options = {}, successMessage, updateStatus = true) {
+    async function requestApi(url, options = {}, successMessage, updateStatus = true, target = displayArea) {
         setLoadingState(true, 'Fetching data...');
 
         try {
             const response = await fetch(url, options);
 
             if (!response.ok) {
+                let serverMessage = '';
+                try {
+                    const errorData = await response.json();
+                    serverMessage = errorData.message || '';
+                } catch {}
+
                 if (response.status === 404) {
                     throw new Error(`Route not found: ${response.status} ${response.statusText}`);
                 }
 
-                throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+                throw new Error(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ' - ' + serverMessage : ''}`);
             }
 
             const data = await response.json();
-            displayArea.innerText = JSON.stringify(data, null, 2);
+            target.innerText = JSON.stringify(data, null, 2);
             if (updateStatus) {
                 statusMessage.classList.remove('error');
                 statusMessage.textContent = (data && typeof data.message === 'string') ? data.message : (successMessage || 'Request completed.');
@@ -137,7 +147,8 @@
 
     // --- 1. GET ROUTE LOGIC ---
     async function fetchBooks() {
-        await requestApi('/api/books');
+        const data = await requestApi('/api/books');
+        if (data) libraryArea.innerText = JSON.stringify(data, null, 2);
     }
 
     // --- 2. POST ROUTE LOGIC ---
@@ -154,7 +165,7 @@
         }, 'Book added successfully.');
 
         if (data) {
-            await requestApi('/api/books', {}, undefined, false);
+            await requestApi('/api/books', {}, undefined, false, libraryArea);
             statusMessage.classList.remove('error');
             statusMessage.textContent = data.message || 'Book added successfully.';
         }
@@ -173,7 +184,7 @@
         }, 'Book updated successfully.');
 
         if (data) {
-            await requestApi('/api/books', {}, undefined, false);
+            await requestApi('/api/books', {}, undefined, false, libraryArea);
             statusMessage.classList.remove('error');
             statusMessage.textContent = data.message || 'Book updated successfully.';
         }
@@ -186,7 +197,7 @@
         }, 'Book deleted successfully.');
 
         if (data) {
-            await requestApi('/api/books', {}, undefined, false);
+            await requestApi('/api/books', {}, undefined, false, libraryArea);
             statusMessage.classList.remove('error');
             statusMessage.textContent = data.message || 'Book deleted successfully.';
         }
