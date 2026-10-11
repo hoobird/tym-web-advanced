@@ -19,12 +19,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// the project array to store books
-let myLibrary = [
-    { title: "The Hobbit", author: "J.R.R. Tolkien" },
-    { title: "Atomic Habits", author: "James Clear" }
-];
-
 // READ ALL
 app.get('/api/books', async (req, res) => {
     try {
