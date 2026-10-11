@@ -12,11 +12,11 @@ const PORT = 3000;
 app.use(express.static('public')); // Runs frontend tester 
 app.use(express.json()); // Middleware to parse JSON bodies in requests
 
-// the project array to store books
-let myLibrary = [
-    { title: "The Hobbit", author: "J.R.R. Tolkien" },
-    { title: "Atomic Habits", author: "James Clear" }
-];
+// // the project array to store books
+// let myLibrary = [
+//     { title: "The Hobbit", author: "J.R.R. Tolkien" },
+//     { title: "Atomic Habits", author: "James Clear" }
+// ];
 
 // READ: Get all books from the database
 app.get('/api/books', async (req, res) => {
