@@ -8,7 +8,7 @@ import cors from 'cors';
 dotenv.config();
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(express.static('public')); // Runs frontend tester 
 app.use(express.json()); // Middleware to parse JSON bodies in requests
